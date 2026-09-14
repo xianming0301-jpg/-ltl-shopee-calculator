@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LTL SHOPEE PRICING & PROFIT CALCULATOR</title>
+<style>
+    :root {
+        --primary: #1A365D;
+        --secondary: #2B6CB0;
+        --accent: #3182CE;
+        --bg: #F7FAFC;
+        --card-bg: #FFFFFF;
+        --border: #E2E8F0;
+        --text-dark: #2D3748;
+        --input-blue: #0000FF;
+        --link-green: #008000;
+        --yellow-bg: #FEFCBF;
+        --danger: #E53E3E;
+        --warning: #DD6B20;
+        --success: #38A169;
+        --dark-green: #22543D;
+        --combo-purple: #6B46C1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text-dark); padding: 20px; line-height: 1.4; }
+
+    header {
+        background-color: var(--primary);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    header h1 { font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+    header .subtitle { font-size: 13px; color: #CBD5E0; }
+
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 4px; overflow-x: auto; }
+    .tab-btn {
+        padding: 10px 20px;
+        background-color: #E2E8F0;
+        border: none;
+        border-radius: 6px 6px 0 0;
+        cursor: pointer;
+        font-weight: bold;
+        color: var(--text-dark);
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .tab-btn.active { background-color: var(--secondary); color: white; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .card h2 { color: var(--secondary); font-size: 16px; border-bottom: 2px solid var(--bg); padding-bottom: 8px; margin-bottom: 15px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 10px; }
+    th { background-color: var(--secondary); color: white; text-align: left; padding: 8px 10px; font-weight: 600; }
+    td { padding: 8px 10px; border: 1px solid var(--border); vertical-align: middle; }
+    tr:nth-child(even) { background-color: #F8FAFC; }
+
+    input, select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #CBD5E0;
+        border-radius: 4px;
+        font-size: 13px;
+        color: var(--input-blue);
+        font-weight: bold;
+    }
+    input:focus, select:focus { outline: 2px solid var(--accent); }
+    .calc-val { font-weight: bold; color: #000; }
+    .highlight { background-color: var(--yellow-bg) !important; }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 12px;
+        text-align: center;
+        width: 100%;
+    }
+    .bg-loss { background-color: #FED7D7; color: #9B2C2C; }
+    .bg-low { background-color: #FEEBC8; color: #9C4221; }
+    .bg-acceptable { background-color: #FEFCBF; color: #744210; }
+    .bg-healthy { background-color: #C6F6D5; color: #22543D; }
+    .bg-strong { background-color: #9AE6B4; color: #22543D; }
+
+    .alert-box { background: #FFF5F5; border-left: 4px solid var(--danger); padding: 10px; color: #C53030; font-size: 12px; margin-bottom: 15px; font-weight: bold; }
+    .info-box { background: #EBF8FF; border-left: 4px solid var(--accent); padding: 10px; color: #2B6CB0; font-size: 12px; margin-bottom: 15px; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .kpi-card { background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
+    .kpi-title { font-size: 11px; color: #718096; text-transform: uppercase; font-weight: bold; }
+    .kpi-val { font-size: 20px; font-weight: bold; color: var(--secondary); margin-top: 5px; }
+
+    .btn {
+        background-color: var(--secondary);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s;
+    }
+    .btn:hover { background-color: var(--primary); }
+    .btn-danger { background-color: var(--danger); }
+    .btn-danger:hover { background-color: #C53030; }
+    .btn-success { background-color: var(--success); }
+    .btn-success:hover { background-color: #276749; }
+    .btn-purple { background-color: var(--combo-purple); color: white; }
+    .btn-purple:hover { background-color: #553C9A; }
+    .btn-outline { background: white; color: var(--secondary); border: 1px solid var(--secondary); font-size: 11px; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+    .btn-outline:hover { background: #EBF8FF; }
+
+    .save-indicator { font-size: 12px; color: #38A169; font-weight: bold; }
+
+    .combo-builder-box {
+        background: #FAF5FF;
+        border: 2px solid #D6BCFA;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .combo-builder-box h3 {
+        color: var(--combo-purple);
+        font-size: 13px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .combo-item-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 6px;
+        align-items: center;
+    }
+    .combo-item-row input[type="text"] { flex: 2; background: white; }
+    .combo-item-row input[type="number"] { flex: 1; background: white; }
+
+    .add-category-banner {
+        background: linear-gradient(135deg, #EBF8FF 0%, #BEE3F8 100%);
+        border: 2px solid var(--accent);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .add-category-banner h3 { color: var(--primary); font-size: 14px; margin-bottom: 8px; }
+    .category-input-group { display: flex; gap: 8px; align-items: center; }
+    .category-input-group input[type="text"] { flex: 2; background: white; }
+    .category-input-group input[type="number"] { flex: 1; background: white; }
+    .quick-presets { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .quick-presets span { font-size: 11px; font-weight: bold; color: var(--text-dark); }
+</style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>Lim Tuan Lee Auto Parts</h1>
+        <div class="subtitle">LTL Shopee Pricing & Profit Calculator</div>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <div class="save-indicator" id="save-status">✓ Auto-Saved</div>
+        <button class="btn btn-outline" onclick="exportData()">💾 Backup Data</button>
+        <button class="btn btn-outline" onclick="importData()">📂 Restore Data</button>
+    </div>
+</header>
+
+<div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('calculator', event)">1. Price Calculator</button>
+    <button class="tab-btn" onclick="switchTab('database', event)">2. Product Database</button>
+    <button class="tab-btn" onclick="switchTab('settings', event)">3. Fee Settings & Categories</button>
+    <button class="tab-btn" onclick="switchTab('dashboard', event)">4. Profit Dashboard</button>
+</div>
+
+<!-- TAB 1: PRICE CALCULATOR -->
+<div id="tab-calculator" class="tab-content active">
+    <div class="grid-container">
+        
+        <div class="card">
+            <h2>1. Product Mode & Basic Info</h2>
+            <table>
+                <tr>
+                    <td style="width:50%">Product Mode</td>
+                    <td>
+                        <select id="calc-mode" class="highlight" onchange="toggleProductMode()">
+                            <option value="SINGLE">📦 Single Item Product</option>
+                            <option value="COMBO">🎁 Combo / Bundle Package</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>SKU Code</td>
+                    <td><input type="text" id="calc-sku" value="LTL-ENG-5W30-4L"></td>
+                </tr>
+                <tr>
+                    <td>Product Title</td>
+                    <td><input type="text" id="calc-name" value="Fully Synthetic Engine Oil 5W-30 (4L)"></td>
+                </tr>
+                <tr>
+                    <td>Shopee Category</td>
+                    <td>
+                        <select id="calc-category" class="highlight" onchange="calculateAll()">
+                            <!-- Dynamic Categories -->
+                        </select>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- SINGLE COST INPUTS -->
+            <div id="single-cost-box">
+                <table>
+                    <tr>
+                        <td style="width:50%">Product COGS (RM)</td>
+                        <td><input type="number" id="calc-cogs" value="85.00" step="0.01" oninput="calculateAll()"></td>
+                    </tr>
+                    <tr>
+                        <td>Inbound Freight (RM)</td>
+                        <td><input type="number" id="calc-freight" value="2.00" step="0.01" oninput="calculateAll()"></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- COMBO BUILDER -->
+            <div id="combo-cost-box" class="combo-builder-box" style="display:none;">
+                <h3>
+                    <span>📦 Combo Component Breakdown</span>
+                    <button class="btn btn-purple" style="font-size:11px; padding:2px 6px;" onclick="addComboRow()">+ Add Item</button>
+                </h3>
+                <div id="combo-items-container"></div>
+                <div class="quick-presets" style="margin-top:6px;">
+                    <span>Presets:</span>
+                    <button class="btn-outline" onclick="loadComboPreset('SERVICE')">Oil + Filter</button>
+                    <button class="btn-outline" onclick="loadComboPreset('BRAKE')">Front Pads + Rotors</button>
+                </div>
+            </div>
+
+            <h2>2. Fulfilment & Operational Costs</h2>
+            <table>
+                <tr>
+                    <td style="width:50%"><strong>TOTAL LANDED COGS (RM)</strong></td>
+                    <td class="calc-val" style="color:var(--combo-purple); font-size:15px;" id="val-landed">RM 87.00</td>
+                </tr>
+                <tr>
+                    <td>Packaging Cost (Box/Wrap) (RM)</td>
+                    <td><input type="number" id="calc-packaging" value="1.50" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>Labeling & Printing (RM)</td>
+                    <td><input type="number" id="calc-label" value="0.30" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>Advertising Cost / Order (RM)</td>
+                    <td><input type="number" id="calc-ads" value="3.00" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>Return Rate Buffer (%)</td>
+                    <td><input type="number" id="calc-return-rate" value="2.0" step="0.1" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td><strong>TOTAL NON-SHOPEE COSTS (RM)</strong></td>
+                    <td class="calc-val" id="val-non-shopee-cost">RM 93.54</td>
+                </tr>
+            </table>
+
+            <h2>3. Target Profit & Reverse Engine</h2>
+            <table>
+                <tr>
+                    <td style="width:50%">Pricing Target</td>
+                    <td>
+                        <select id="calc-target-type" class="highlight" onchange="calculateAll()">
+                            <option value="RM">A. TARGET PROFIT RM</option>
+                            <option value="MARGIN">B. TARGET NET MARGIN %</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr id="row-target-rm">
+                    <td>Target Net Profit (RM)</td>
+                    <td><input type="number" id="calc-target-profit-rm" value="15.00" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr id="row-target-margin" style="display:none;">
+                    <td>Target Net Margin (%)</td>
+                    <td><input type="number" id="calc-target-margin-pct" value="12.0" step="0.1" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td><strong>BREAK-EVEN PRICE</strong></td>
+                    <td class="calc-val" id="val-break-even">RM 108.00</td>
+                </tr>
+                <tr>
+                    <td><strong>MINIMUM TARGET PRICE</strong></td>
+                    <td class="calc-val" id="val-min-price">RM 125.12</td>
+                </tr>
+                <tr>
+                    <td><strong>RECOMMENDED LISTING PRICE</strong></td>
+                    <td class="calc-val" style="color:var(--secondary); font-size:16px;" id="val-rec-price">RM 125.90</td>
+                </tr>
+            </table>
+            <button class="btn" style="width:100%; margin-top:10px;" onclick="saveToDatabase()">Save Product to Database</button>
+        </div>
+
+        <div class="card">
+            <h2>4. "What If I Sell At..." — Profit Simulator</h2>
+            <table>
+                <tr>
+                    <td style="width:50%">Shopee Listing Price (RM)</td>
+                    <td><input type="number" id="sim-price" value="129.00" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>Shopee Transaction Fee (3.78%)</td>
+                    <td class="calc-val" id="sim-fee-txn">RM 4.88</td>
+                </tr>
+                <tr>
+                    <td>Shopee Commission Fee</td>
+                    <td class="calc-val" id="sim-fee-comm">RM 6.27</td>
+                </tr>
+                <tr>
+                    <td>Platform Support Fee</td>
+                    <td class="calc-val" id="sim-fee-platform">RM 0.54</td>
+                </tr>
+                <tr>
+                    <td>Programme Fees</td>
+                    <td class="calc-val" id="sim-fee-prog">RM 4.88</td>
+                </tr>
+                <tr>
+                    <td><strong>TOTAL SHOPEE FEES (RM)</strong></td>
+                    <td class="calc-val" id="sim-total-fees">RM 16.57</td>
+                </tr>
+                <tr>
+                    <td><strong>NET PAYOUT (RM)</strong></td>
+                    <td class="calc-val" id="sim-net-payout">RM 112.43</td>
+                </tr>
+                <tr>
+                    <td><strong>NET PROFIT (RM)</strong></td>
+                    <td class="calc-val" style="font-size:16px;" id="sim-net-profit">RM 18.89</td>
+                </tr>
+                <tr>
+                    <td><strong>NET PROFIT MARGIN (%)</strong></td>
+                    <td class="calc-val" style="font-size:16px;" id="sim-net-margin">14.64%</td>
+                </tr>
+            </table>
+
+            <h2>Price Safety System</h2>
+            <div id="safety-status-badge" class="status-badge bg-healthy">HEALTHY MARGIN</div>
+
+            <h2 style="margin-top:15px;">Shop Counter vs Shopee Price</h2>
+            <table>
+                <tr>
+                    <td style="width:50%">Physical Counter Price (RM)</td>
+                    <td><input type="number" id="calc-shop-price" value="110.00" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>Difference vs Shopee Price</td>
+                    <td class="calc-val" id="val-shop-diff">+RM 19.00 (+17.27%)</td>
+                </tr>
+            </table>
+            <div class="alert-box" style="margin-top:10px; margin-bottom:0;">
+                ⚠️ Never use counter price directly online. Counter price (RM110) yields only RM1.84 profit on Shopee.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>5. Campaign & Discount Simulator</h2>
+            <table>
+                <tr>
+                    <td style="width:50%">Campaign Discount (%)</td>
+                    <td><input type="number" id="sim-discount-pct" value="8.0" step="0.1" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>Campaign Price (RM)</td>
+                    <td class="calc-val" id="sim-campaign-price">RM 118.68</td>
+                </tr>
+                <tr>
+                    <td>Net Profit During Campaign</td>
+                    <td class="calc-val" id="sim-campaign-profit">RM 9.88</td>
+                </tr>
+                <tr>
+                    <td>Net Margin During Campaign</td>
+                    <td class="calc-val" id="sim-campaign-margin">8.33%</td>
+                </tr>
+                <tr>
+                    <td>Campaign Status</td>
+                    <td><div id="sim-campaign-status" class="status-badge bg-acceptable">SAFE TO JOIN</div></td>
+                </tr>
+                <tr>
+                    <td><strong>MAX SAFE DISCOUNT (%)</strong></td>
+                    <td class="calc-val" id="sim-max-discount">12.4%</td>
+                </tr>
+            </table>
+
+            <h2>Break-Even Advertising (Shopee Ads)</h2>
+            <table>
+                <tr>
+                    <td style="width:50%">Max Allowable Ad Spend / Order</td>
+                    <td class="calc-val" id="ads-max-spend">RM 21.89</td>
+                </tr>
+                <tr>
+                    <td><strong>Break-Even ROAS</strong></td>
+                    <td class="calc-val" id="ads-be-roas">5.89 x</td>
+                </tr>
+                <tr>
+                    <td>Target ROAS (For RM15 Profit)</td>
+                    <td class="calc-val" id="ads-target-roas">18.72 x</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>6. Unit Economics (Per RM100 Sales)</h2>
+            <table>
+                <tr>
+                    <th>Cost Component</th>
+                    <th>RM Allocation</th>
+                    <th>Share %</th>
+                </tr>
+                <tr>
+                    <td>Landed Product COGS</td>
+                    <td class="calc-val" id="ue-cogs">RM 67.44</td>
+                    <td class="calc-val" id="ue-cogs-pct">67.4%</td>
+                </tr>
+                <tr>
+                    <td>Shopee Fees & SST</td>
+                    <td class="calc-val" id="ue-fees">RM 12.84</td>
+                    <td class="calc-val" id="ue-fees-pct">12.8%</td>
+                </tr>
+                <tr>
+                    <td>Fulfilment & Packaging</td>
+                    <td class="calc-val" id="ue-fulfilment">RM 1.40</td>
+                    <td class="calc-val" id="ue-fulfilment-pct">1.4%</td>
+                </tr>
+                <tr>
+                    <td>Advertising Spend</td>
+                    <td class="calc-val" id="ue-ads">RM 2.33</td>
+                    <td class="calc-val" id="ue-ads-pct">2.3%</td>
+                </tr>
+                <tr>
+                    <td><strong>LTL Net Profit</strong></td>
+                    <td class="calc-val" style="color:var(--success);" id="ue-profit">RM 14.64</td>
+                    <td class="calc-val" style="color:var(--success);" id="ue-profit-pct">14.6%</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB 2: PRODUCT PRICING DATABASE -->
+<div id="tab-database" class="tab-content">
+    <div class="card">
+        <h2>Product Pricing Database (Stored in Browser)</h2>
+        <div style="margin-bottom: 10px; display: flex; justify-content: space-between; gap:10px;">
+            <input type="text" id="db-search" placeholder="Search SKU, Product Name, or Category..." style="width: 350px;" oninput="renderDatabase()">
+            <button class="btn btn-danger" onclick="clearDatabase()">Clear Database</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>SKU</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>COGS</th>
+                        <th>Counter Price</th>
+                        <th>Rec. Price</th>
+                        <th>Current Price</th>
+                        <th>Fees</th>
+                        <th>Profit</th>
+                        <th>Margin</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="database-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- TAB 3: SHOPEE FEE SETTINGS -->
+<div id="tab-settings" class="tab-content">
+    <div class="grid-container">
+        
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>➕ Add & Manage Custom Product Categories</h2>
+            
+            <div class="add-category-banner">
+                <h3>CREATE NEW SHOPEE CATEGORY</h3>
+                <div class="category-input-group">
+                    <input type="text" id="new-cat-name" placeholder="Category Name (e.g., Car Batteries, Wiper Blades, Suspension)">
+                    <input type="number" id="new-cat-rate" placeholder="Commission % (e.g. 4.5)" step="0.01">
+                    <button class="btn btn-success" onclick="addNewCategory()">+ Save Category</button>
+                </div>
+                
+                <div class="quick-presets">
+                    <span>⚡ Quick-Add Presets:</span>
+                    <button class="btn-outline" onclick="addPresetCategory('Car Batteries', 4.5)">+ Car Batteries (4.5%)</button>
+                    <button class="btn-outline" onclick="addPresetCategory('Wiper Blades', 4.0)">+ Wiper Blades (4.0%)</button>
+                    <button class="btn-outline" onclick="addPresetCategory('Suspension & Steering', 4.0)">+ Suspension (4.0%)</button>
+                    <button class="btn-outline" onclick="addPresetCategory('Car Care & Detailing', 5.0)">+ Car Care (5.0%)</button>
+                    <button class="btn-outline" onclick="addPresetCategory('Tyres & Wheels', 4.0)">+ Tyres & Wheels (4.0%)</button>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="font-size: 14px; color: var(--secondary);">Active Categories (<span id="cat-count">0</span>)</h3>
+                <input type="text" id="cat-search" placeholder="Search category..." style="width: 200px;" oninput="renderCategoryTable()">
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category Name</th>
+                        <th>Base Commission Before SST %</th>
+                        <th>Effective Rate (incl. 8% SST)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="category-fee-tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Standard Platform Fees & SST Settings</h2>
+            <table>
+                <tr>
+                    <td style="width:50%">Transaction Fee Before SST (%)</td>
+                    <td><input type="number" id="fee-txn-base" value="3.50" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>SST Rate (%)</td>
+                    <td><input type="number" id="fee-sst" value="8.00" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td><strong>Effective Txn Fee (incl. SST)</strong></td>
+                    <td class="calc-val" id="fee-txn-effective">3.78%</td>
+                </tr>
+                <tr>
+                    <td>Platform Support Fee Before SST (RM)</td>
+                    <td><input type="number" id="fee-platform-base" value="0.50" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>Platform Support Fee Applicable?</td>
+                    <td>
+                        <select id="fee-platform-app" class="highlight" onchange="calculateAll()">
+                            <option value="YES">YES</option>
+                            <option value="NO">NO</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Charged Platform Fee / Order</strong></td>
+                    <td class="calc-val" id="fee-platform-effective">RM 0.54</td>
+                </tr>
+            </table>
+
+            <h2>Optional Programme Fees</h2>
+            <table>
+                <tr>
+                    <th>Programme</th>
+                    <th>Applicable?</th>
+                    <th>Nominal Rate %</th>
+                </tr>
+                <tr>
+                    <td>Free Shipping Programme</td>
+                    <td>
+                        <select id="prog-freeship-app" class="highlight" onchange="calculateAll()">
+                            <option value="YES">YES</option>
+                            <option value="NO">NO</option>
+                        </select>
+                    </td>
+                    <td><input type="number" id="prog-freeship-rate" value="3.50" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+                <tr>
+                    <td>Coins Cashback Programme</td>
+                    <td>
+                        <select id="prog-coins-app" class="highlight" onchange="calculateAll()">
+                            <option value="NO">NO</option>
+                            <option value="YES">YES</option>
+                        </select>
+                    </td>
+                    <td><input type="number" id="prog-coins-rate" value="2.50" step="0.01" oninput="calculateAll()"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="info-box">
+                <strong>Official Sources & Review Dates:</strong><br>
+                Last Checked: <strong>11 September 2026</strong> | Next Review: <strong>11 October 2026</strong><br>
+                • <a href="https://help.shopee.com.my/portal/4/article/77215" target="_blank">Shopee Terms of Service</a><br>
+                • <a href="https://seller.shopee.com.my/edu/article/6799" target="_blank">Commission Rates Guide</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TAB 4: PROFIT DASHBOARD -->
+<div id="tab-dashboard" class="tab-content">
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-title">Active Products</div>
+            <div class="kpi-val" id="dash-active-count">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Total Monthly Sales</div>
+            <div class="kpi-val" id="dash-total-sales">RM 0.00</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Total Monthly Net Profit</div>
+            <div class="kpi-val" id="dash-total-profit">RM 0.00</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Average Net Margin</div>
+            <div class="kpi-val" id="dash-avg-margin">0.0%</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Executive Portfolio Performance</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric Identifier</th>
+                    <th>Value / Product Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="dash-audit-tbody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let categoryRates = {
+        "Engine Oil": 4.50,
+        "Filters": 4.50,
+        "Brake Components": 4.00,
+        "Spark Plugs": 4.00,
+        "Automotive Fluids": 4.50,
+        "General Automotive Parts": 5.00
+    };
+
+    let comboItems = [
+        { name: "Engine Oil 5W30 (4L)", cogs: 85.00, freight: 2.00 },
+        { name: "Perodua Myvi Oil Filter", cogs: 8.50, freight: 0.50 }
+    ];
+
+    let dbProducts = [];
+
+    function init() {
+        loadSettings();
+        renderCategoryTable();
+        populateCategoryDropdown();
+        renderComboItems();
+        calculateAll();
+        loadDatabase();
+    }
+
+    function switchTab(tabId, evt) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        evt.target.classList.add('active');
+        document.getElementById('tab-' + tabId).classList.add('active');
+
+        if(tabId === 'dashboard') updateDashboard();
+    }
+
+    function toggleProductMode() {
+        let mode = document.getElementById('calc-mode').value;
+        if(mode === 'COMBO') {
+            document.getElementById('single-cost-box').style.display = 'none';
+            document.getElementById('combo-cost-box').style.display = 'block';
+            document.getElementById('calc-sku').value = 'LTL-COMBO-MYVI-5W30';
+            document.getElementById('calc-name').value = 'Perodua Myvi Service Combo: 5W30 Oil + Filter';
+            document.getElementById('calc-packaging').value = '3.00';
+        } else {
+            document.getElementById('single-cost-box').style.display = 'block';
+            document.getElementById('combo-cost-box').style.display = 'none';
+            document.getElementById('calc-sku').value = 'LTL-ENG-5W30-4L';
+            document.getElementById('calc-name').value = 'Fully Synthetic Engine Oil 5W-30 (4L)';
+            document.getElementById('calc-packaging').value = '1.50';
+        }
+        calculateAll();
+    }
+
+    function renderComboItems() {
+        let container = document.getElementById('combo-items-container');
+        container.innerHTML = '';
+        comboItems.forEach((item, idx) => {
+            container.innerHTML += `
+                <div class="combo-item-row">
+                    <input type="text" value="${item.name}" placeholder="Item ${idx+1} Name" oninput="updateComboItem(${idx}, 'name', this.value)">
+                    <input type="number" value="${item.cogs.toFixed(2)}" placeholder="COGS" step="0.01" oninput="updateComboItem(${idx}, 'cogs', this.value)">
+                    <input type="number" value="${item.freight.toFixed(2)}" placeholder="Freight" step="0.01" oninput="updateComboItem(${idx}, 'freight', this.value)">
+                    <button class="btn btn-danger" style="padding: 2px 6px; font-size:11px;" onclick="removeComboRow(${idx})">X</button>
+                </div>
+            `;
+        });
+    }
+
+    function addComboRow() {
+        if(comboItems.length >= 6) {
+            alert('Maximum 6 items allowed per combo bundle.');
+            return;
+        }
+        comboItems.push({ name: `Item ${comboItems.length+1}`, cogs: 10.00, freight: 0.50 });
+        renderComboItems();
+        calculateAll();
+    }
+
+    function removeComboRow(idx) {
+        if(comboItems.length <= 1) {
+            alert('A combo bundle must contain at least 1 item.');
+            return;
+        }
+        comboItems.splice(idx, 1);
+        renderComboItems();
+        calculateAll();
+    }
+
+    function updateComboItem(idx, key, val) {
+        if(key === 'name') comboItems[idx].name = val;
+        else comboItems[idx][key] = parseFloat(val) || 0;
+        calculateAll();
+    }
+
+    function loadComboPreset(type) {
+        if(type === 'SERVICE') {
+            comboItems = [
+                { name: "Engine Oil 5W30 (4L)", cogs: 85.00, freight: 2.00 },
+                { name: "Oil Filter", cogs: 8.50, freight: 0.50 },
+                { name: "Engine Air Filter", cogs: 15.00, freight: 1.00 }
+            ];
+        } else if(type === 'BRAKE') {
+            comboItems = [
+                { name: "Front Brake Pads Set", cogs: 45.00, freight: 1.50 },
+                { name: "Front Brake Rotors Pair", cogs: 95.00, freight: 4.00 }
+            ];
+        }
+        renderComboItems();
+        calculateAll();
+    }
+
+    function populateCategoryDropdown(selectCategoryName = null) {
+        let select = document.getElementById('calc-category');
+        let currentSelected = selectCategoryName || select.value;
+        select.innerHTML = '';
+        
+        for(let cat in categoryRates) {
+            let opt = document.createElement('option');
+            opt.value = cat;
+            opt.innerText = `${cat} (${categoryRates[cat].toFixed(2)}%)`;
+            select.appendChild(opt);
+        }
+
+        if(currentSelected && categoryRates[currentSelected] !== undefined) {
+            select.value = currentSelected;
+        }
+    }
+
+    function renderCategoryTable() {
+        let sst = (parseFloat(document.getElementById('fee-sst').value) || 8) / 100;
+        let tbody = document.getElementById('category-fee-tbody');
+        let search = (document.getElementById('cat-search')?.value || '').toLowerCase();
+        
+        tbody.innerHTML = '';
+
+        for(let cat in categoryRates) {
+            if(search && !cat.toLowerCase().includes(search)) continue;
+
+            let base = categoryRates[cat];
+            let effective = base * (1 + sst);
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${cat}</b></td>
+                    <td><input type="number" value="${base.toFixed(2)}" step="0.1" onchange="updateCategoryRate('${cat}', this.value)"></td>
+                    <td class="calc-val">${effective.toFixed(2)}%</td>
+                    <td><button class="btn btn-danger" style="padding: 2px 8px; font-size:11px;" onclick="deleteCategory('${cat}')">Delete</button></td>
+                </tr>
+            `;
+        }
+
+        let countElem = document.getElementById('cat-count');
+        if(countElem) countElem.innerText = Object.keys(categoryRates).length;
+    }
+
+    function addNewCategory() {
+        let nameInput = document.getElementById('new-cat-name');
+        let rateInput = document.getElementById('new-cat-rate');
+        
+        let name = nameInput.value.trim();
+        let rate = parseFloat(rateInput.value);
+
+        if(!name) { alert('Please enter a category name.'); return; }
+        if(isNaN(rate) || rate < 0) { alert('Please enter a valid percentage.'); return; }
+
+        categoryRates[name] = rate;
+        nameInput.value = '';
+        rateInput.value = '';
+
+        renderCategoryTable();
+        populateCategoryDropdown(name);
+        calculateAll();
+        saveSettings();
+        alert(`Category "${name}" saved!`);
+    }
+
+    function addPresetCategory(name, rate) {
+        categoryRates[name] = rate;
+        renderCategoryTable();
+        populateCategoryDropdown(name);
+        calculateAll();
+        saveSettings();
+        alert(`Preset "${name}" (${rate}%) added!`);
+    }
+
+    function deleteCategory(cat) {
+        if(Object.keys(categoryRates).length <= 1) { alert('Must keep at least one category.'); return; }
+        if(confirm(`Delete category "${cat}"?`)) {
+            delete categoryRates[cat];
+            renderCategoryTable();
+            populateCategoryDropdown();
+            calculateAll();
+            saveSettings();
+        }
+    }
+
+    function updateCategoryRate(cat, val) {
+        categoryRates[cat] = parseFloat(val) || 0;
+        renderCategoryTable();
+        populateCategoryDropdown();
+        calculateAll();
+        saveSettings();
+    }
+
+    function calculateAll() {
+        let sst = parseFloat(document.getElementById('fee-sst').value) / 100;
+        let txnBase = parseFloat(document.getElementById('fee-txn-base').value) / 100;
+        let txnEffective = txnBase * (1 + sst);
+        document.getElementById('fee-txn-effective').innerText = (txnEffective * 100).toFixed(2) + '%';
+
+        let platformBase = parseFloat(document.getElementById('fee-platform-base').value);
+        let platformApp = document.getElementById('fee-platform-app').value;
+        let platformEffective = (platformApp === 'YES') ? platformBase * (1 + sst) : 0;
+        document.getElementById('fee-platform-effective').innerText = 'RM ' + platformEffective.toFixed(2);
+
+        let freeShipRate = document.getElementById('prog-freeship-app').value === 'YES' ? (parseFloat(document.getElementById('prog-freeship-rate').value) / 100) * (1 + sst) : 0;
+        let coinsRate = document.getElementById('prog-coins-app').value === 'YES' ? (parseFloat(document.getElementById('prog-coins-rate').value) / 100) * (1 + sst) : 0;
+        let totalProgRate = freeShipRate + coinsRate;
+
+        let cat = document.getElementById('calc-category').value;
+        let commBase = (categoryRates[cat] !== undefined ? categoryRates[cat] : 5.00) / 100;
+        let commEffective = commBase * (1 + sst);
+
+        let mode = document.getElementById('calc-mode').value;
+        let landed = 0;
+        if(mode === 'SINGLE') {
+            let cogs = parseFloat(document.getElementById('calc-cogs').value) || 0;
+            let freight = parseFloat(document.getElementById('calc-freight').value) || 0;
+            landed = cogs + freight;
+        } else {
+            landed = comboItems.reduce((sum, item) => sum + item.cogs + item.freight, 0);
+        }
+        document.getElementById('val-landed').innerText = 'RM ' + landed.toFixed(2);
+
+        let packaging = parseFloat(document.getElementById('calc-packaging').value) || 0;
+        let label = parseFloat(document.getElementById('calc-label').value) || 0;
+        let ads = parseFloat(document.getElementById('calc-ads').value) || 0;
+        let returnRate = (parseFloat(document.getElementById('calc-return-rate').value) || 0) / 100;
+        let returnAllowance = landed * returnRate;
+
+        let nonShopeeCosts = landed + packaging + label + ads + returnAllowance;
+        document.getElementById('val-non-shopee-cost').innerText = 'RM ' + nonShopeeCosts.toFixed(2);
+
+        let totalVarFeePct = txnEffective + commEffective + totalProgRate;
+
+        let targetType = document.getElementById('calc-target-type').value;
+        document.getElementById('row-target-rm').style.display = (targetType === 'RM') ? 'table-row' : 'none';
+        document.getElementById('row-target-margin').style.display = (targetType === 'MARGIN') ? 'table-row' : 'none';
+
+        let breakEvenPrice = (nonShopeeCosts + platformEffective) / (1 - totalVarFeePct);
+        document.getElementById('val-break-even').innerText = 'RM ' + breakEvenPrice.toFixed(2);
+
+        let minPrice = 0;
+        if(targetType === 'RM') {
+            let targetRM = parseFloat(document.getElementById('calc-target-profit-rm').value) || 0;
+            minPrice = (nonShopeeCosts + platformEffective + targetRM) / (1 - totalVarFeePct);
+        } else {
+            let targetMargin = (parseFloat(document.getElementById('calc-target-margin-pct').value) || 0) / 100;
+            minPrice = (nonShopeeCosts + platformEffective) / (1 - totalVarFeePct - targetMargin);
+        }
+        document.getElementById('val-min-price').innerText = 'RM ' + minPrice.toFixed(2);
+
+        let recPrice = Math.floor(minPrice) + 0.90;
+        if (recPrice < minPrice) recPrice += 1.00;
+        document.getElementById('val-rec-price').innerText = 'RM ' + recPrice.toFixed(2);
+
+        let simPrice = parseFloat(document.getElementById('sim-price').value) || 0;
+        let simTxn = simPrice * txnEffective;
+        let simComm = simPrice * commEffective;
+        let simProg = simPrice * totalProgRate;
+        let simTotalFees = simTxn + simComm + platformEffective + simProg;
+        let simPayout = simPrice - simTotalFees;
+        let simProfit = simPayout - nonShopeeCosts;
+        let simMargin = simPrice > 0 ? (simProfit / simPrice) : 0;
+
+        document.getElementById('sim-fee-txn').innerText = 'RM ' + simTxn.toFixed(2);
+        document.getElementById('sim-fee-comm').innerText = 'RM ' + simComm.toFixed(2);
+        document.getElementById('sim-fee-platform').innerText = 'RM ' + platformEffective.toFixed(2);
+        document.getElementById('sim-fee-prog').innerText = 'RM ' + simProg.toFixed(2);
+        document.getElementById('sim-total-fees').innerText = 'RM ' + simTotalFees.toFixed(2);
+        document.getElementById('sim-net-payout').innerText = 'RM ' + simPayout.toFixed(2);
+        document.getElementById('sim-net-profit').innerText = 'RM ' + simProfit.toFixed(2);
+        document.getElementById('sim-net-margin').innerText = (simMargin * 100).toFixed(2) + '%';
+
+        let badge = document.getElementById('safety-status-badge');
+        if (simPrice < breakEvenPrice) {
+            badge.className = 'status-badge bg-loss';
+            badge.innerText = 'LOSS-MAKING PRICE';
+        } else if (simMargin < 0.05) {
+            badge.className = 'status-badge bg-low';
+            badge.innerText = 'MARGIN TOO LOW (<5%)';
+        } else if (simMargin < 0.10) {
+            badge.className = 'status-badge bg-acceptable';
+            badge.innerText = 'ACCEPTABLE (5%-10%)';
+        } else if (simMargin < 0.20) {
+            badge.className = 'status-badge bg-healthy';
+            badge.innerText = 'HEALTHY MARGIN (10%-20%)';
+        } else {
+            badge.className = 'status-badge bg-strong';
+            badge.innerText = 'STRONG MARGIN (>20%)';
+        }
+
+        let shopPrice = parseFloat(document.getElementById('calc-shop-price').value) || 0;
+        let diffRM = simPrice - shopPrice;
+        let diffPct = shopPrice > 0 ? (diffRM / shopPrice) * 100 : 0;
+        document.getElementById('val-shop-diff').innerText = (diffRM >= 0 ? '+' : '') + 'RM ' + diffRM.toFixed(2) + ' (' + (diffPct >= 0 ? '+' : '') + diffPct.toFixed(2) + '%)';
+
+        let discountPct = (parseFloat(document.getElementById('sim-discount-pct').value) || 0) / 100;
+        let campaignPrice = simPrice * (1 - discountPct);
+        let campFees = (campaignPrice * totalVarFeePct) + platformEffective;
+        let campProfit = (campaignPrice - campFees) - nonShopeeCosts;
+        let campMargin = campaignPrice > 0 ? (campProfit / campaignPrice) : 0;
+
+        document.getElementById('sim-campaign-price').innerText = 'RM ' + campaignPrice.toFixed(2);
+        document.getElementById('sim-campaign-profit').innerText = 'RM ' + campProfit.toFixed(2);
+        document.getElementById('sim-campaign-margin').innerText = (campMargin * 100).toFixed(2) + '%';
+
+        let campStatus = document.getElementById('sim-campaign-status');
+        if(campMargin >= 0.05) {
+            campStatus.className = 'status-badge bg-acceptable';
+            campStatus.innerText = 'SAFE TO JOIN';
+        } else {
+            campStatus.className = 'status-badge bg-loss';
+            campStatus.innerText = 'DO NOT JOIN — PROFIT TOO LOW';
+        }
+
+        let maxDiscount = 1 - (breakEvenPrice / simPrice);
+        document.getElementById('sim-max-discount').innerText = (maxDiscount > 0 ? (maxDiscount * 100).toFixed(1) : '0.0') + '%';
+
+        let maxAdSpend = simPayout - landed - packaging - label - returnAllowance;
+        document.getElementById('ads-max-spend').innerText = 'RM ' + maxAdSpend.toFixed(2);
+        document.getElementById('ads-be-roas').innerText = maxAdSpend > 0 ? (simPrice / maxAdSpend).toFixed(2) + ' x' : 'N/A';
+        document.getElementById('ads-target-roas').innerText = (maxAdSpend - 15) > 0 ? (simPrice / (maxAdSpend - 15)).toFixed(2) + ' x' : 'N/A';
+
+        if(simPrice > 0) {
+            let factor = 100 / simPrice;
+            document.getElementById('ue-cogs').innerText = 'RM ' + (landed * factor).toFixed(2);
+            document.getElementById('ue-cogs-pct').innerText = ((landed / simPrice) * 100).toFixed(1) + '%';
+            document.getElementById('ue-fees').innerText = 'RM ' + (simTotalFees * factor).toFixed(2);
+            document.getElementById('ue-fees-pct').innerText = ((simTotalFees / simPrice) * 100).toFixed(1) + '%';
+            document.getElementById('ue-fulfilment').innerText = 'RM ' + ((packaging + label) * factor).toFixed(2);
+            document.getElementById('ue-fulfilment-pct').innerText = (((packaging + label) / simPrice) * 100).toFixed(1) + '%';
+            document.getElementById('ue-ads').innerText = 'RM ' + (ads * factor).toFixed(2);
+            document.getElementById('ue-ads-pct').innerText = ((ads / simPrice) * 100).toFixed(1) + '%';
+            document.getElementById('ue-profit').innerText = 'RM ' + (simProfit * factor).toFixed(2);
+            document.getElementById('ue-profit-pct').innerText = (simMargin * 100).toFixed(1) + '%';
+        }
+
+        saveSettings();
+    }
+
+    function saveToDatabase() {
+        let sku = document.getElementById('calc-sku').value;
+        let name = document.getElementById('calc-name').value;
+        let cat = document.getElementById('calc-category').value;
+        let landed = parseFloat(document.getElementById('val-landed').innerText.replace('RM ', '')) || 0;
+        let shopPrice = parseFloat(document.getElementById('calc-shop-price').value) || 0;
+        let recPrice = parseFloat(document.getElementById('val-rec-price').innerText.replace('RM ', '')) || 0;
+        let currentPrice = parseFloat(document.getElementById('sim-price').value) || 0;
+        let fees = parseFloat(document.getElementById('sim-total-fees').innerText.replace('RM ', '')) || 0;
+        let profit = parseFloat(document.getElementById('sim-net-profit').innerText.replace('RM ', '')) || 0;
+        let margin = parseFloat(document.getElementById('sim-net-margin').innerText.replace('%', '')) || 0;
+
+        let status = "HEALTHY";
+        if(margin < 0) status = "LOSS";
+        else if(margin < 5) status = "LOW MARGIN";
+        else if(margin > 20) status = "STRONG";
+
+        let index = dbProducts.findIndex(p => p.sku === sku);
+        let prodData = { sku, name, cat, cogs: landed, shopPrice, recPrice, currentPrice, fees, profit, margin, status };
+
+        if(index >= 0) dbProducts[index] = prodData;
+        else dbProducts.push(prodData);
+
+        localStorage.setItem('ltl_db_products', JSON.stringify(dbProducts));
+        alert('Product saved to Database!');
+        renderDatabase();
+    }
+
+    function loadDatabase() {
+        let saved = localStorage.getItem('ltl_db_products');
+        if(saved) dbProducts = JSON.parse(saved);
+        renderDatabase();
+    }
+
+    function renderDatabase() {
+        let tbody = document.getElementById('database-tbody');
+        let search = document.getElementById('db-search').value.toLowerCase();
+        tbody.innerHTML = '';
+
+        dbProducts.filter(p => p.sku.toLowerCase().includes(search) || p.name.toLowerCase().includes(search) || p.cat.toLowerCase().includes(search)).forEach((p, idx) => {
+            let statusClass = "bg-healthy";
+            if(p.status === "LOSS") statusClass = "bg-loss";
+            if(p.status === "LOW MARGIN") statusClass = "bg-low";
+            if(p.status === "STRONG") statusClass = "bg-strong";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${p.sku}</b></td>
+                    <td>${p.name}</td>
+                    <td>${p.cat}</td>
+                    <td>RM ${p.cogs.toFixed(2)}</td>
+                    <td>RM ${p.shopPrice.toFixed(2)}</td>
+                    <td>RM ${p.recPrice.toFixed(2)}</td>
+                    <td><b>RM ${p.currentPrice.toFixed(2)}</b></td>
+                    <td>RM ${p.fees.toFixed(2)}</td>
+                    <td>RM ${p.profit.toFixed(2)}</td>
+                    <td>${p.margin.toFixed(2)}%</td>
+                    <td><span class="status-badge ${statusClass}">${p.status}</span></td>
+                    <td><button class="btn btn-danger" style="padding:2px 6px; font-size:11px;" onclick="deleteProduct(${idx})">X</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function deleteProduct(idx) {
+        dbProducts.splice(idx, 1);
+        localStorage.setItem('ltl_db_products', JSON.stringify(dbProducts));
+        renderDatabase();
+    }
+
+    function clearDatabase() {
+        if(confirm('Are you sure you want to clear all products?')) {
+            dbProducts = [];
+            localStorage.removeItem('ltl_db_products');
+            renderDatabase();
+        }
+    }
+
+    function exportData() {
+        let backup = {
+            settings: localStorage.getItem('ltl_settings'),
+            products: localStorage.getItem('ltl_db_products')
+        };
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup));
+        let downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "LTL_Shopee_Backup.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importData() {
+        let jsonStr = prompt("Paste your backed up JSON string here:");
+        if(jsonStr) {
+            try {
+                let backup = JSON.parse(jsonStr);
+                if(backup.settings) localStorage.setItem('ltl_settings', backup.settings);
+                if(backup.products) localStorage.setItem('ltl_db_products', backup.products);
+                init();
+                alert('Data successfully restored!');
+            } catch(e) {
+                alert('Invalid JSON backup data format.');
+            }
+        }
+    }
+
+    function updateDashboard() {
+        document.getElementById('dash-active-count').innerText = dbProducts.length;
+        let totalSales = dbProducts.reduce((sum, p) => sum + (p.currentPrice * 10), 0);
+        let totalProfit = dbProducts.reduce((sum, p) => sum + (p.profit * 10), 0);
+        let avgMargin = totalSales > 0 ? (totalProfit / totalSales) * 100 : 0;
+
+        document.getElementById('dash-total-sales').innerText = 'RM ' + totalSales.toFixed(2);
+        document.getElementById('dash-total-profit').innerText = 'RM ' + totalProfit.toFixed(2);
+        document.getElementById('dash-avg-margin').innerText = avgMargin.toFixed(1) + '%';
+
+        let auditTbody = document.getElementById('dash-audit-tbody');
+        auditTbody.innerHTML = `
+            <tr>
+                <td>Lowest Margin Product</td>
+                <td>${dbProducts.length > 0 ? dbProducts.slice().sort((a,b)=>a.margin-b.margin)[0].name : 'N/A'}</td>
+                <td><span class="status-badge bg-loss">REVIEW PRICE</span></td>
+            </tr>
+            <tr>
+                <td>Most Profitable Product</td>
+                <td>${dbProducts.length > 0 ? dbProducts.slice().sort((a,b)=>b.profit-a.profit)[0].name : 'N/A'}</td>
+                <td><span class="status-badge bg-strong">SCALE ADS</span></td>
+            </tr>
+        `;
+    }
+
+    function saveSettings() {
+        let settings = {
+            sst: document.getElementById('fee-sst').value,
+            txnBase: document.getElementById('fee-txn-base').value,
+            platformBase: document.getElementById('fee-platform-base').value,
+            platformApp: document.getElementById('fee-platform-app').value,
+            categories: categoryRates
+        };
+        localStorage.setItem('ltl_settings', JSON.stringify(settings));
+    }
+
+    function loadSettings() {
+        let saved = localStorage.getItem('ltl_settings');
+        if(saved) {
+            let s = JSON.parse(saved);
+            document.getElementById('fee-sst').value = s.sst;
+            document.getElementById('fee-txn-base').value = s.txnBase;
+            document.getElementById('fee-platform-base').value = s.platformBase;
+            document.getElementById('fee-platform-app').value = s.platformApp;
+            if(s.categories) {
+                categoryRates = s.categories;
+            }
+        }
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
