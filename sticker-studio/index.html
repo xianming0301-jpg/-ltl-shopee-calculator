@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Ultimate Visual Sticker Studio Pro</title>
+<title>LTL Ultimate Sticker Printer</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LTL Sticker Printer">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--bg:#f3f4f6;--surface:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--hint:#9ca3af;--blue:#3b82f6;--blue-light:#eff6ff;--green:#16a34a;--green-light:#f0fdf4;--red:#dc2626;--red-light:#fef2f2;--radius:12px;--shadow:0 1px 3px #00000014}
@@ -21,7 +24,7 @@ button,input,select,textarea{font:inherit}.topbar{position:sticky;top:0;z-index:
 </style>
 </head>
 <body>
-<header class="topbar"><div class="toprow"><span class="title">🏷️ Ultimate Visual Sticker Studio Pro</span><button class="bt" id="bt-btn" onclick="toggleBluetooth()"><span class="dot"></span><span id="bt-label">Connect Printer</span></button></div><div class="search"><input id="search" placeholder="Search templates… e.g. brake pad, Myvi" oninput="searchChanged(this.value)"><button class="clear" id="clear" onclick="clearSearch()">×</button></div></header>
+<header class="topbar"><div class="toprow"><span class="title">🏷️ LTL Ultimate Sticker Printer</span><button class="bt" id="bt-btn" onclick="toggleBluetooth()"><span class="dot"></span><span id="bt-label">Connect Printer</span></button></div><div class="search"><input id="search" placeholder="Search templates… e.g. brake pad, Myvi" oninput="searchChanged(this.value)"><button class="clear" id="clear" onclick="clearSearch()">×</button></div></header>
 <div class="filters"><div class="chips" id="filters"></div><select class="sort" id="sort" onchange="renderList()"><option value="recent">Recent</option><option value="az">A–Z</option><option value="za">Z–A</option></select></div>
 <main class="layout">
 <section class="left"><div class="count" id="count"></div><div class="grid" id="grid"></div></section>
