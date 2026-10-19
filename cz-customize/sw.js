@@ -1,6 +1,6 @@
-const CACHE='cz-customize-v1';
+const CACHE='cz-customize-v3';
 const ROOT=new URL('./',self.location).href;
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([ROOT,ROOT+'index.html',ROOT+'manifest.webmanifest',ROOT+'icon.svg'])).then(()=>self.skipWaiting()));});
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll([ROOT,ROOT+'index.html',ROOT+'manifest.webmanifest',ROOT+'cz-icon-180.png',ROOT+'cz-icon-192.png',ROOT+'cz-icon-512.png'])).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil(self.clients.claim());});
 self.addEventListener('fetch',event=>{
  const url=new URL(event.request.url);
