@@ -100,7 +100,7 @@
     <details class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm no-print">
       <summary class="font-semibold cursor-pointer">Pasang aplikasi &amp; simpan data</summary>
       <p class="mt-2">iPhone: Buka pautan ini dalam Safari → Kongsi → Tambah ke Skrin Utama. Laptop: buka pautan yang sama atau pasang melalui menu pelayar.</p>
-      <p class="mt-2">Data disimpan dalam pelayar peranti ini sahaja, tanpa penyegerakan automatik. Gunakan Simpanan/Sandaran → Sandaran Penuh (JSON) untuk membuat salinan atau memindahkan data. Import akan menggantikan rekod peranti ini.</p>
+      <p class="mt-2">Data disimpan dalam pelayar peranti ini sahaja, tanpa penyegerakan automatik. Gunakan Simpanan/Sandaran → Sandaran Penuh (JSON) untuk membuat salinan atau memindahkan data. Pilih Gabung Sandaran untuk menggabungkan rekod. Ganti Semua Rekod akan menggantikan rekod peranti ini.</p>
     </details>
     <!-- Kad Ringkasan Analitik -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 no-print">
@@ -318,8 +318,13 @@
             <i data-lucide="download" class="w-4 h-4 text-gray-500"></i>
           </button>
 
+          <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-2">
+            <label for="mergeBackupInput" class="block font-bold text-sm text-blue-800">Gabung Sandaran / Merge Backup</label>
+            <p class="text-xs text-gray-600">Kekalkan rekod peranti ini dan tambah rekod daripada peranti lain. Rekod sama sepenuhnya (termasuk tarikh dan gambar) dilangkau. Versi yang berbeza dikekalkan sebagai rekod berasingan.</p>
+            <input id="mergeBackupInput" type="file" accept=".json,application/json" onchange="mergeJSON(event)" class="w-full text-xs text-gray-600">
+          </div>
           <div class="pt-2 border-t border-gray-200">
-            <label class="block text-xs font-bold text-gray-600 mb-2">Pulihkan / Import Pangkalan Data (JSON)</label>
+            <label class="block text-xs font-bold text-gray-600 mb-2">Ganti Semua Rekod / Restore (JSON)</label>
             <input type="file" accept=".json" onchange="importJSON(event)" class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-800 hover:file:bg-gray-300 cursor-pointer">
           </div>
         </div>
@@ -852,6 +857,77 @@
       a.href = url;
       a.download = `CZ_CUSTOMIZE_SANDARAN_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
+    }
+
+
+    function validateMergeBackup(data) {
+      if (!data || !Array.isArray(data.orders) || !Array.isArray(data.categories)) throw new Error('Fail sandaran tidak sah.');
+      const textFields = ['custName','prodName','plateNum','category','size','templateSize','payStatus','notes','date'];
+      for (const o of data.orders) {
+        if (!o || typeof o.custName !== 'string' || typeof o.prodName !== 'string' || !Number.isFinite(Number(o.price)) || textFields.some(k => o[k] != null && typeof o[k] !== 'string') || (o.image != null && typeof o.image !== 'string') || (o.image && !/^data:image\/(png|jpeg|webp|gif|heic|heif);base64,[A-Za-z0-9+/=\s]+$/.test(o.image))) throw new Error('Rekod dalam sandaran tidak sah.');
+      }
+      if (data.categories.some(c => !c || typeof c.name !== 'string' || !c.name.trim())) throw new Error('Kategori dalam sandaran tidak sah.');
+    }
+
+    function mergeRecordKey(o) {
+      const values = ['custName','prodName','plateNum','category','size','templateSize','notes','date','image'].map(k => o[k] ?? '');
+      const status = ['Lunas','Paid','Selesai'].includes(o.payStatus) ? 'Selesai' : (o.payStatus || 'Belum Bayar');
+      return JSON.stringify([...values, Number(o.price), status]);
+    }
+
+    async function mergeBackupData(data) {
+      validateMergeBackup(data);
+      let added = 0, skipped = 0, addedCategories = 0;
+      await db.transaction('rw', db.orders, db.categories, async () => {
+        const categories = await db.categories.toArray();
+        const names = new Map(categories.map(c => [c.name.trim().toLocaleLowerCase(), c.name]));
+        const ensureCategory = async name => {
+          const clean = (name || '').trim();
+          if (!clean) return name || '';
+          const key = clean.toLocaleLowerCase();
+          if (!names.has(key)) {
+            await db.categories.add({name: clean});
+            names.set(key, clean);
+            addedCategories++;
+          }
+          return names.get(key);
+        };
+        for (const c of data.categories) await ensureCategory(c.name);
+        const existing = await db.orders.toArray();
+        const keys = new Set(existing.map(o => mergeRecordKey({...o, category: names.get((o.category || '').trim().toLocaleLowerCase()) || o.category || ''})));
+        for (const incoming of data.orders) {
+          const record = {};
+          for (const k of ['custName','prodName','plateNum','size','templateSize','payStatus','notes','date','image']) record[k] = incoming[k] ?? (k === 'image' ? null : '');
+          record.price = Number(incoming.price);
+          record.category = await ensureCategory(incoming.category);
+          const key = mergeRecordKey(record);
+          if (keys.has(key)) { skipped++; continue; }
+          // Local numeric IDs can collide across devices. Let IndexedDB allocate new IDs.
+          await db.orders.add(record);
+          keys.add(key);
+          added++;
+        }
+      });
+      return {added, skipped, addedCategories};
+    }
+
+    async function mergeJSON(event) {
+      const input = event.target;
+      const file = input.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        validateMergeBackup(data);
+        if (!confirm(`Gabungkan ${data.orders.length} rekod daripada sandaran? Rekod sedia ada akan dikekalkan. Rekod yang sama sepenuhnya akan dilangkau.`)) return;
+        const result = await mergeBackupData(data);
+        selectedCategoryFilter = 'ALL';
+        await updateCategoryUI();
+        await renderOrders();
+        alert(`Gabungan berjaya!\n${result.added} rekod ditambah\n${result.skipped} rekod sama dilangkau\n${result.addedCategories} kategori ditambah`);
+      } catch (error) {
+        console.error(error);
+        alert('Gabungan gagal. Tiada perubahan disimpan. Semak fail JSON dan ruang simpanan peranti.');
+      } finally { input.value = ''; }
     }
 
     async function importJSON(e) {
